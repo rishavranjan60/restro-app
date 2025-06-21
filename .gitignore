@@ -1,0 +1,9 @@
+echo node_modules > .gitignore
+echo dist >> .gitignore
+echo .env >> .gitignore
+echo client/node_modules >> .gitignore
+echo admin/node_modules >> .gitignore
+echo backend/node_modules >> .gitignore
+echo backend/dist >> .gitignore
+admin/tailwindcss.exe
+
