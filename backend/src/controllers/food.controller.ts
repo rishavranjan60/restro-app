@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { FoodModel } from "../models/food.model";
 
 // GET /api/foods
-export const getFoods = async (_: Request, res: Response) => {
+export const getFoods = async (_: Request, res: Response): Promise<void> => {
   try {
     const foods = await FoodModel.find();
     res.json(foods);
@@ -12,12 +12,13 @@ export const getFoods = async (_: Request, res: Response) => {
 };
 
 // POST /api/foods
-export const addFood = async (req: Request, res: Response) => {
+export const addFood = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, category, price, quantity, type, eta, image, description } = req.body;
 
     if (!name || !category || !price) {
-      return res.status(400).json({ error: "Required fields missing" });
+      res.status(400).json({ error: "Required fields missing" });
+      return;
     }
 
     const newFood = new FoodModel({
@@ -39,14 +40,15 @@ export const addFood = async (req: Request, res: Response) => {
 };
 
 // PUT /api/foods/:id
-export const updateFood = async (req: Request, res: Response) => {
+export const updateFood = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const updateData = req.body;
 
   try {
     const updatedFood = await FoodModel.findByIdAndUpdate(id, updateData, { new: true });
     if (!updatedFood) {
-      return res.status(404).json({ error: "Food not found" });
+      res.status(404).json({ error: "Food not found" });
+      return;
     }
     res.json({ message: "Food updated", food: updatedFood });
   } catch (error) {
@@ -55,13 +57,14 @@ export const updateFood = async (req: Request, res: Response) => {
 };
 
 // DELETE /api/foods/:id
-export const deleteFood = async (req: Request, res: Response) => {
+export const deleteFood = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
     const deleted = await FoodModel.findByIdAndDelete(id);
     if (!deleted) {
-      return res.status(404).json({ error: "Food not found" });
+      res.status(404).json({ error: "Food not found" });
+      return;
     }
     res.json({ message: "Food deleted" });
   } catch (error) {

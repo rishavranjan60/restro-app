@@ -7,7 +7,7 @@ import cors from "cors";
 import path from "path";
 
 // Add this line to connect to MongoDB
-import { connectDB } from "./db";
+import connectDB from './db';
 
 
 // Import routes
