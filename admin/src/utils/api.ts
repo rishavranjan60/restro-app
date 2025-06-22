@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api/foods";
+const API = "https://restro-backend.onrender.com/api/foods";
 
 export const getFoods = async () => {
   const res = await fetch(API);
