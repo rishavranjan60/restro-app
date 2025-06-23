@@ -156,7 +156,7 @@ const MenuForm: React.FC = () => {
             type="number"
             value={form.price}
             onChange={handleChange}
-            placeholder="Price (Rs)"
+            placeholder="Price (EURO: )"
             required
           />
 
@@ -266,7 +266,7 @@ const MenuForm: React.FC = () => {
                 </td>
                 <td className="p-2">{food.name}</td>
                 <td className="p-2">{food.quantity}</td>
-                <td className="p-2">Rs. {food.price}</td>
+                <td className="p-2">EURO: {food.price}</td>
                 <td className="p-2">{food.category}</td>
                 <td className="p-2">{food.type}</td>
                 <td className="p-2">{food.eta}</td>

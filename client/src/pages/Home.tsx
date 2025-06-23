@@ -196,7 +196,7 @@ const Home: React.FC = () => {
               onClear={clearCart}
             />
 
-            <p className="mt-4 text-lg font-bold">Total: Rs. {total}</p>
+            <p className="mt-4 text-lg font-bold">Total: EURO: {total}</p>
 
             <div className="mt-4 bg-gray-700 p-3 rounded-md">
               <h3 className="text-lg font-medium mb-2">🧾 Customer Details</h3>
