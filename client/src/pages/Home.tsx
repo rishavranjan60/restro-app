@@ -6,6 +6,9 @@ import Cart from "../components/Cart";
 import BillDownload from "../components/BillDownload";
 import { placeOrder } from "../utils/api";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+
+
 const Home: React.FC = () => {
   const [category, setCategory] = useState<Category>("All");
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
@@ -17,16 +20,16 @@ const Home: React.FC = () => {
   const [quantitySelection, setQuantitySelection] = useState<Record<string, "Full" | "Half">>({});
 
   useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        const res = await axios.get<FoodItem[]>("http://localhost:5000/api/foods");
-        setFoodItems(res.data);
-      } catch (err) {
-        console.error("❌ Failed to fetch foods", err);
-      }
-    };
-    fetchFoods();
-  }, []);
+  const fetchFoods = async () => {
+    try {
+      const res = await axios.get<FoodItem[]>(`${API_BASE_URL}/foods`);
+      setFoodItems(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch foods", err);
+    }
+  };
+  fetchFoods();
+}, []);
 
   const filtered = category === "All"
     ? foodItems
@@ -137,7 +140,10 @@ const Home: React.FC = () => {
                 {/* Left - Image */}
                 <div className="w-16 h-16 rounded overflow-hidden bg-white">
                   <img
-                    src={item.image || "/images/placeholder.jpg"}
+                    src={item.image}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/images/placeholder.jpg";
+                    }}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />

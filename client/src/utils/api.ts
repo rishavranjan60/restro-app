@@ -1,5 +1,9 @@
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+if (!API_BASE_URL) {
+  throw new Error("REACT_APP_API_BASE_URL is not defined in .env");
+}
+
 export const placeOrder = async (order: any) => {
   const res = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
@@ -8,7 +12,8 @@ export const placeOrder = async (order: any) => {
   });
 
   if (!res.ok) {
-    throw new Error("Order failed");
+    const errMsg = await res.text();
+    throw new Error(`Order failed: ${errMsg}`);
   }
 
   return res.json();

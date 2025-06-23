@@ -64,24 +64,28 @@ const MenuForm: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      let imageUrl = form.image;
+      const foodForm = new FormData();
+      foodForm.append("name", form.name);
+      foodForm.append("quantity", form.quantity);
+      foodForm.append("price", form.price.toString());
+      foodForm.append("category", form.category);
+      foodForm.append("type", form.type);
+      foodForm.append("eta", form.eta);
+      foodForm.append("description", form.description);
 
       if (imageFile) {
-        const uploadForm = new FormData();
-        uploadForm.append("file", imageFile);
-        const uploadRes = await axios.post("http://localhost:5000/api/upload", uploadForm);
-        imageUrl = uploadRes.data.url;
+        foodForm.append("image", imageFile); // Cloudinary field
       }
 
-      const foodData = {
-        ...form,
-        image: imageUrl,
-      };
-
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/foods/${editingId}`, foodData);
+        // Optionally update backend PUT to accept multipart/form-data
+        await axios.put(`http://localhost:5000/api/foods/${editingId}`, foodForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
-        await axios.post("http://localhost:5000/api/foods", foodData);
+        await axios.post("http://localhost:5000/api/foods", foodForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       fetchFoods();
@@ -94,6 +98,7 @@ const MenuForm: React.FC = () => {
   const handleEdit = (food: FoodItem) => {
     setForm(food);
     setEditingId(food._id || null);
+    setImageFile(null); // Clear old image file
   };
 
   const handleDelete = async (id?: string) => {
@@ -130,6 +135,7 @@ const MenuForm: React.FC = () => {
             value={form.name}
             onChange={handleChange}
             placeholder="Food Name"
+            required
           />
 
           <select
@@ -137,6 +143,7 @@ const MenuForm: React.FC = () => {
             name="quantity"
             value={form.quantity}
             onChange={handleChange}
+            required
           >
             <option value="">Select Quantity</option>
             <option value="Full">Full</option>
@@ -150,6 +157,7 @@ const MenuForm: React.FC = () => {
             value={form.price}
             onChange={handleChange}
             placeholder="Price (Rs)"
+            required
           />
 
           <select
@@ -157,6 +165,7 @@ const MenuForm: React.FC = () => {
             name="category"
             value={form.category}
             onChange={handleChange}
+            required
           >
             <option value="">Select Category</option>
             {categories.map((cat, idx) => (
@@ -182,6 +191,7 @@ const MenuForm: React.FC = () => {
             value={form.eta}
             onChange={handleChange}
             placeholder="ETA (e.g. 15 min)"
+            required
           />
 
           <input
@@ -191,12 +201,21 @@ const MenuForm: React.FC = () => {
             onChange={handleImageChange}
           />
 
+          {imageFile && (
+            <img
+              src={URL.createObjectURL(imageFile)}
+              alt="Preview"
+              className="w-24 h-24 object-cover rounded mt-2"
+            />
+          )}
+
           <textarea
             className="p-2 rounded text-black col-span-1 md:col-span-2"
             name="description"
             value={form.description}
             onChange={handleChange}
             placeholder="Description"
+            required
           />
         </div>
 
