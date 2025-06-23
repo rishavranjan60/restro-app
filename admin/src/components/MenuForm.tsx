@@ -23,6 +23,9 @@ const categories = [
   "Dessert",
 ];
 
+// ✅ Set API base URL from env
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const MenuForm: React.FC = () => {
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [form, setForm] = useState<FoodItem>({
@@ -39,8 +42,12 @@ const MenuForm: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchFoods = async () => {
-    const res = await axios.get("http://localhost:5000/api/foods");
-    setFoods(res.data);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/foods`);
+      setFoods(res.data);
+    } catch (err) {
+      console.error("❌ Error fetching foods:", err);
+    }
   };
 
   useEffect(() => {
@@ -74,16 +81,15 @@ const MenuForm: React.FC = () => {
       foodForm.append("description", form.description);
 
       if (imageFile) {
-        foodForm.append("image", imageFile); // Cloudinary field
+        foodForm.append("image", imageFile);
       }
 
       if (editingId) {
-        // Optionally update backend PUT to accept multipart/form-data
-        await axios.put(`http://localhost:5000/api/foods/${editingId}`, foodForm, {
+        await axios.put(`${API_BASE_URL}/foods/${editingId}`, foodForm, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await axios.post("http://localhost:5000/api/foods", foodForm, {
+        await axios.post(`${API_BASE_URL}/foods`, foodForm, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -98,13 +104,17 @@ const MenuForm: React.FC = () => {
   const handleEdit = (food: FoodItem) => {
     setForm(food);
     setEditingId(food._id || null);
-    setImageFile(null); // Clear old image file
+    setImageFile(null);
   };
 
   const handleDelete = async (id?: string) => {
     if (!id) return;
-    await axios.delete(`http://localhost:5000/api/foods/${id}`);
-    fetchFoods();
+    try {
+      await axios.delete(`${API_BASE_URL}/foods/${id}`);
+      fetchFoods();
+    } catch (err) {
+      console.error("❌ Error deleting food item:", err);
+    }
   };
 
   const resetForm = () => {
@@ -156,7 +166,7 @@ const MenuForm: React.FC = () => {
             type="number"
             value={form.price}
             onChange={handleChange}
-            placeholder="Price (EURO: )"
+            placeholder="Price (EURO)"
             required
           />
 
