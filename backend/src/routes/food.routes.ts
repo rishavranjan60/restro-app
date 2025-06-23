@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { storage } from '../../utils/cloudinary';
+import { storage } from '../utils/cloudinary';
 import { addFood } from '../controllers/food.controller'; // fixed name
 
 const router = express.Router();
