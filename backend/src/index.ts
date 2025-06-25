@@ -23,14 +23,26 @@ const app = express();
 connectDB(); // REQUIRED!
 
 // Middlewares
-app.use(cors({
-  origin: [
-    "https://restro-client.onrender.com",
-    "https://restro-app-erlm.onrender.com"
-  ],
+const allowedOrigins = [
+  "https://restro-app-erlm.onrender.com",   // admin
+  "https://restro-client.onrender.com",     // client
+  "http://localhost:3000",                  // local client (CRA)
+  "http://localhost:5173"                   // local admin (Vite)
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS blocked for origin: " + origin));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
