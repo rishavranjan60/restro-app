@@ -26,6 +26,9 @@ const categories = [
 // ✅ Set API base URL from env
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+console.log("API_BASE_URL is:", API_BASE_URL);
+
+
 const MenuForm: React.FC = () => {
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [form, setForm] = useState<FoodItem>({
