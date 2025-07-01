@@ -2,13 +2,18 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "commonjs",
-    "esModuleInterop": true,        // ✅ This is very important
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "rootDir": "./src",
-    "moduleResolution": "node",
+    "outDir": "./dist",
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
-  }
+    "moduleResolution": "node",
+    "sourceMap": true,              // 👍 Generates .map files for easier debugging
+    "noImplicitAny": true,          // Forces explicit types
+    "noEmitOnError": true           // Prevents output if there are TypeScript errors
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }
