@@ -7,19 +7,23 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     console.log("==== BODY ====", JSON.stringify(req.body, null, 2));
     console.log("==== FILE ====", req.file);
 
+    // Extract price as raw string first
     const { name, category, price: rawPrice, quantity, type, eta, description } = req.body;
     const image = req.file?.path; // Cloudinary image URL
 
+    // Convert price to number explicitly
     const price = Number(rawPrice);
-    console.log("Price value converted to number:", price);
+    console.log("Converted price (Number):", price);
     console.log("Image URL:", image);
 
+    // Validate required fields
     if (!name || !category || !image || isNaN(price)) {
       console.log("❌ Missing or invalid fields", { name, category, rawPrice, image });
       res.status(400).json({ error: "Required fields missing or invalid" });
       return;
     }
 
+    // Create new food document
     const newFood = new FoodModel({
       name,
       category,
@@ -31,8 +35,9 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
       description,
     });
 
+    // Save to DB
     await newFood.save();
-    console.log("✅ Food item saved:", newFood);
+    console.log("✅ Food item saved successfully:", newFood);
     res.status(201).json(newFood);
   } catch (error: any) {
     console.error("❌ Error adding food:", error);
