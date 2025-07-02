@@ -125,7 +125,7 @@ const Home: React.FC = () => {
     <div className="md:flex bg-[#0d0d1d] text-white min-h-screen">
       {/* Left - Food Items */}
       <div className="md:w-2/3 w-full p-4 overflow-y-auto max-h-screen">
-        <h1 className="text-2xl font-bold mb-2">🍴 Haitomns Restro</h1>
+        <h1 className="text-2xl font-bold mb-2">Restro Menu</h1>
         <CategoryFilter selected={category} onChange={setCategory} />
 
         <div className="space-y-4 mt-4">
