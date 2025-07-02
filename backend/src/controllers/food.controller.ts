@@ -4,6 +4,11 @@ import { FoodModel } from '../models/food.model';
 // ✅ POST: Add new food
 export const addFood = async (req: Request, res: Response): Promise<void> => {
   try {
+    
+    console.log("==== BODY ====", req.body);
+    console.log("==== FILE ====", req.file);
+
+    6517
     const { name, category, price, quantity, type, eta, description } = req.body;
     const image = req.file?.path; // Cloudinary image URL
 
