@@ -4,13 +4,17 @@ import { FoodModel } from '../models/food.model';
 // ✅ POST: Add new food
 export const addFood = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("==== BODY ====", req.body);
-    console.log("==== FILE ====", req.file ? JSON.stringify(req.file, null, 2) : "No file uploaded");
+    console.log("==== BODY ====", JSON.stringify(req.body, null, 2));
+    console.log("==== FILE ====", req.file);
 
     const { name, category, price, quantity, type, eta, description } = req.body;
     const image = req.file?.path; // Cloudinary image URL
 
-    if (!name || !category || !price || !image) {
+    console.log("Price value received:", price);
+    console.log("Image URL:", image);
+
+    if (!name || !category || !image || price === undefined) {
+      console.log("❌ Missing fields", { name, category, price, image });
       res.status(400).json({ error: "Required fields missing" });
       return;
     }
@@ -27,10 +31,11 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     });
 
     await newFood.save();
+    console.log("✅ Food item saved:", newFood);
     res.status(201).json(newFood);
   } catch (error: any) {
-    console.error("Error adding food:", error instanceof Error ? error.message : JSON.stringify(error));
-    res.status(500).json({ error: error instanceof Error ? error.message : "Something went wrong" });
+    console.error("❌ Error adding food:", error);
+    res.status(500).json({ error: error.message || "Something went wrong" });
   }
 };
 
@@ -40,7 +45,7 @@ export const getFoods = async (req: Request, res: Response): Promise<void> => {
     const foods = await FoodModel.find();
     res.status(200).json(foods);
   } catch (error: any) {
-    console.error("Error fetching foods:", error instanceof Error ? error.message : JSON.stringify(error));
+    console.error("❌ Error fetching foods:", error);
     res.status(500).json({ error: "Failed to fetch food items" });
   }
 };
