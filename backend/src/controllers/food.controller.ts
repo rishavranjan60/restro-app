@@ -7,15 +7,16 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     console.log("==== BODY ====", JSON.stringify(req.body, null, 2));
     console.log("==== FILE ====", req.file);
 
-    const { name, category, price, quantity, type, eta, description } = req.body;
+    const { name, category, price: rawPrice, quantity, type, eta, description } = req.body;
     const image = req.file?.path; // Cloudinary image URL
 
-    console.log("Price value received:", price);
+    const price = Number(rawPrice);
+    console.log("Price value converted to number:", price);
     console.log("Image URL:", image);
 
-    if (!name || !category || !image || price === undefined) {
-      console.log("❌ Missing fields", { name, category, price, image });
-      res.status(400).json({ error: "Required fields missing" });
+    if (!name || !category || !image || isNaN(price)) {
+      console.log("❌ Missing or invalid fields", { name, category, rawPrice, image });
+      res.status(400).json({ error: "Required fields missing or invalid" });
       return;
     }
 
