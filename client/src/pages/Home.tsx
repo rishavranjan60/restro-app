@@ -6,7 +6,7 @@ import Cart from "../components/Cart";
 import BillDownload from "../components/BillDownload";
 import { placeOrder } from "../utils/api";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL as string;
 
 
 const Home: React.FC = () => {
