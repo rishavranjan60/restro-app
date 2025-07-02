@@ -74,6 +74,21 @@ const MenuForm: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
+
+      // 👉 ADD THIS LOG FIRST
+    console.log("✅ FormData debug:", {
+      name: form.name,
+      quantity: form.quantity,
+      price: form.price,
+      category: form.category,
+      type: form.type,
+      eta: form.eta,
+      description: form.description,
+      imageFile,
+    });
+
+
+    
       const foodForm = new FormData();
       foodForm.append("name", form.name);
       foodForm.append("quantity", form.quantity);
