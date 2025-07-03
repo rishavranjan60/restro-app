@@ -1,15 +1,13 @@
 import express from 'express';
-import multer from 'multer';
-import { storage } from '../utils/cloudinary';
+import { upload } from '../utils/cloudinary';
 import { addFood, getFoods } from '../controllers/food.controller';
 
 const router = express.Router();
-const upload = multer({ storage });
 
-// ✅ GET all food items
+// ✅ GET all foods
 router.get('/', getFoods);
 
-// ✅ POST a new food item with image upload
+// ✅ POST new food
 router.post('/', upload.single('image'), addFood);
 
 export default router;
