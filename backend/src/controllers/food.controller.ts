@@ -4,8 +4,9 @@ import { FoodModel } from '../models/food.model';
 // ✅ POST: Add new food
 export const addFood = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("🟡 Incoming form data:", JSON.stringify(req.body, null, 2));
-    console.log("📷 Uploaded file:", JSON.stringify(req.file, null, 2));
+    // ✅ Safe logging of incoming form data
+    console.log("🟡 Incoming form data (body):", req.body);
+    console.log("📷 Uploaded file (req.file):", req.file);
 
     // ⛔ If image is not uploaded
     if (!req.file) {
@@ -14,25 +15,35 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const image = req.file.path; // Cloudinary file URL
+    // ✅ Extract the Cloudinary URL
+    const image = req.file.path;
 
-    // Extract fields
-    const { name, category, price: rawPrice, quantity, type, eta, description } = req.body;
+    // ✅ Extract fields from form data
+    const {
+      name,
+      category,
+      price: rawPrice,
+      quantity,
+      type,
+      eta,
+      description,
+    } = req.body;
+
     const price = Number(rawPrice);
 
-    // Validate required fields
+    // ✅ Validate required fields
     if (!name || !category || !image || isNaN(price)) {
-      console.error("❌ Missing or invalid fields", {
-        name,
-        category,
-        rawPrice,
-        image,
+      console.error("❌ Validation failed. Missing or invalid fields:", {
+        nameMissing: !name,
+        categoryMissing: !category,
+        priceInvalid: isNaN(price),
+        imageMissing: !image,
       });
-      res.status(400).json({ error: "Required fields missing or invalid" });
+      res.status(400).json({ error: "Required fields missing or invalid." });
       return;
     }
 
-    // Create and save the food item
+    // ✅ Create and save the food item
     const newFood = new FoodModel({
       name,
       category,
@@ -47,10 +58,11 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     await newFood.save();
     console.log("✅ Food item saved successfully:", newFood);
     res.status(201).json(newFood);
+
   } catch (error: any) {
-    console.error("❌ Error adding food:", error?.message);
+    console.error("❌ Error adding food item:");
     console.error("📜 Full error object:", error);
-    res.status(500).json({ error: error.message || "Something went wrong" });
+    res.status(500).json({ error: error?.message || "Something went wrong" });
   }
 };
 
