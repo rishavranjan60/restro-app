@@ -60,10 +60,12 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json(newFood);
 
   } catch (error: any) {
-    console.error("❌ Error adding food item:");
-    console.error("📜 Full error object:", error);
-    res.status(500).json({ error: error?.message || "Something went wrong" });
-  }
+  console.error("❌ Error adding food item:", error);
+  res.status(500).json({
+    error: error.message || "Something went wrong",
+    fullError: error
+  });
+}
 };
 
 // ✅ GET: Fetch all food items
