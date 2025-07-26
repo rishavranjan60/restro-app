@@ -1,5 +1,4 @@
-
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
@@ -7,7 +6,7 @@ import cors from "cors";
 import path from "path";
 
 // Connect to MongoDB
-import connectDB from './db';
+import connectDB from "./db";
 
 // Import routes
 import foodRoutes from "./routes/food.routes";
@@ -31,18 +30,20 @@ const allowedOrigins = [
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    console.log("Request origin:", origin);
+    console.log("🌐 Incoming request origin:", origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error("❌ CORS blocked:", origin);
       callback(new Error("CORS blocked for origin: " + origin));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ Handle preflight OPTIONS requests
 // --- ✅ End CORS Setup ---
 
 app.use(express.json());
@@ -58,8 +59,16 @@ app.use("/api/tables", tableRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 
+// Optional: Global error handler
+app.use(
+  (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("🔥 Global error handler:", JSON.stringify(err, null, 2));
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+);
+
 // Start Server
 const PORT = parseInt(process.env.PORT || "5000", 10);
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
