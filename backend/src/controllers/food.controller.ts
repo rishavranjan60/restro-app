@@ -4,8 +4,8 @@ import { FoodModel } from '../models/food.model';
 // ✅ POST: Add new food
 export const addFood = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("🟡 Incoming form data:", req.body);
-    console.log("📷 Uploaded file:", req.file);
+    console.log("🟡 Incoming form data:", JSON.stringify(req.body, null, 2));
+    console.log("📷 Uploaded file:", JSON.stringify(req.file, null, 2));
 
     // ⛔ If image is not uploaded
     if (!req.file) {
@@ -48,7 +48,8 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
     console.log("✅ Food item saved successfully:", newFood);
     res.status(201).json(newFood);
   } catch (error: any) {
-    console.error("❌ Error adding food:", error);
+    console.error("❌ Error adding food:", error?.message);
+    console.error("📜 Full error object:", error);
     res.status(500).json({ error: error.message || "Something went wrong" });
   }
 };
