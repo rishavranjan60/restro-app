@@ -66,7 +66,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // IMPORTANT: ECS health check expects containerPort = 5000
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => {
+const PORT = parseInt(process.env.PORT || "5000", 10);
+app.listen(PORT, () => {
   console.log(` Backend running on port ${PORT}`);
 });
+
