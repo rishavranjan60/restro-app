@@ -1,11 +1,8 @@
-// admin/utils/api.ts
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://restro-backend-eder.onrender.com/api/foods";
+// ✅ Use ECS Load Balancer DNS URL once deployed
+const API_BASE_URL = "https://http://alb-1234.us-east-1.elb.amazonaws.com/api/foods";
 
 export const getFoods = async () => {
-  const res = await fetch(API_BASE_URL, {
-    credentials: "include",
-  });
+  const res = await fetch(API_BASE_URL, { credentials: "include" });
   return res.json();
 };
 

@@ -1,23 +1,21 @@
-# Use Node.js base image
-FROM node:18
+# Use Node.js LTS
+FROM node:18-alpine
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Copy dependency files
+# Copy dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy source code
+# Copy all source code
 COPY . .
 
-# Build TypeScript to JavaScript
+# Build TypeScript into dist/
 RUN npm run build
 
-# Expose app port
-EXPOSE 5000
+# Expose port (adjust if needed)
+EXPOSE 8080
 
-# Start the app
+# Start app (runs dist/index.js)
 CMD ["npm", "start"]

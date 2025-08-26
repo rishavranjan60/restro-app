@@ -6,8 +6,9 @@ import Cart from "../components/Cart";
 import BillDownload from "../components/BillDownload";
 import { placeOrder } from "../utils/api";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL as string;
-
+// 🔥 Update this to your AWS ECS / Fargate Load Balancer DNS
+// Example: "https://abc123xyz.us-east-1.elb.amazonaws.com/api"
+const API_BASE_URL = "https://restro-backend-alb-1234567890.us-east-1.elb.amazonaws.com/api";
 
 const Home: React.FC = () => {
   const [category, setCategory] = useState<Category>("All");
@@ -17,50 +18,59 @@ const Home: React.FC = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [table, setTable] = useState("");
-  const [quantitySelection, setQuantitySelection] = useState<Record<string, "Full" | "Half">>({});
+  const [quantitySelection, setQuantitySelection] = useState<
+    Record<string, "Full" | "Half">
+  >({});
 
+  // ✅ Fetch menu from backend
   useEffect(() => {
-  const fetchFoods = async () => {
-    try {
-      const res = await axios.get<FoodItem[]>(`${API_BASE_URL}/foods`);
-      setFoodItems(res.data);
-    } catch (err) {
-      console.error("❌ Failed to fetch foods", err);
-    }
-  };
-  fetchFoods();
-}, []);
+    const fetchFoods = async () => {
+      try {
+        const res = await axios.get<FoodItem[]>(`${API_BASE_URL}/foods`);
+        setFoodItems(res.data);
+      } catch (err) {
+        console.error("❌ Failed to fetch foods", err);
+      }
+    };
+    fetchFoods();
+  }, []);
 
-  const filtered = category === "All"
-    ? foodItems
-    : foodItems.filter(f => f.category === category);
+  const filtered =
+    category === "All"
+      ? foodItems
+      : foodItems.filter((f) => f.category === category);
 
+  // ✅ Add item to cart
   const addToCart = (item: FoodItem) => {
     const id = item._id || item.id!;
     const selectedQuantity = quantitySelection[id] || "Full";
     const price = selectedQuantity === "Full" ? item.price : item.price / 2;
 
-    const existing = cart.find(p => (p._id === id || p.id === id) && p.quantity === selectedQuantity);
+    const existing = cart.find(
+      (p) =>
+        (p._id === id || p.id === id) && p.quantity === selectedQuantity
+    );
 
     if (existing) {
-      setCart(prev =>
-        prev.map(p =>
+      setCart((prev) =>
+        prev.map((p) =>
           (p._id === id || p.id === id) && p.quantity === selectedQuantity
             ? { ...p, cartQuantity: p.cartQuantity + 1 }
             : p
         )
       );
     } else {
-      setCart(prev => [
+      setCart((prev) => [
         ...prev,
         { ...item, cartQuantity: 1, price, quantity: selectedQuantity },
       ]);
     }
   };
 
+  // ✅ Increment cart item
   const increment = (id: number | string) => {
-    setCart(prev =>
-      prev.map(p =>
+    setCart((prev) =>
+      prev.map((p) =>
         p._id === id || p.id === id
           ? { ...p, cartQuantity: p.cartQuantity + 1 }
           : p
@@ -68,15 +78,16 @@ const Home: React.FC = () => {
     );
   };
 
+  // ✅ Decrement cart item
   const decrement = (id: number | string) => {
-    setCart(prev =>
+    setCart((prev) =>
       prev
-        .map(p =>
+        .map((p) =>
           p._id === id || p.id === id
             ? { ...p, cartQuantity: p.cartQuantity - 1 }
             : p
         )
-        .filter(p => p.cartQuantity > 0)
+        .filter((p) => p.cartQuantity > 0)
     );
   };
 
@@ -93,6 +104,7 @@ const Home: React.FC = () => {
     0
   );
 
+  // ✅ Confirm Order
   const confirmOrder = async () => {
     if (!name || !phone || !table) {
       alert("Please fill in all customer details.");
@@ -104,7 +116,7 @@ const Home: React.FC = () => {
         name,
         phone,
         table,
-        items: cart.map(i => ({
+        items: cart.map((i) => ({
           name: i.name,
           quantity: i.cartQuantity,
           price: i.price,
@@ -129,7 +141,7 @@ const Home: React.FC = () => {
         <CategoryFilter selected={category} onChange={setCategory} />
 
         <div className="space-y-4 mt-4">
-          {filtered.map(item => {
+          {filtered.map((item) => {
             const id = item._id || item.id!;
             const selected = quantitySelection[id] || "Full";
             return (
@@ -142,7 +154,8 @@ const Home: React.FC = () => {
                   <img
                     src={item.image}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/images/placeholder.jpg";
+                      (e.target as HTMLImageElement).src =
+                        "/images/placeholder.jpg";
                     }}
                     alt={item.name}
                     className="w-full h-full object-cover"
@@ -152,7 +165,9 @@ const Home: React.FC = () => {
                 {/* Center - Info */}
                 <div className="flex-1 mx-4">
                   <h3 className="text-lg font-semibold">{item.name}</h3>
-                  <p className="text-sm text-gray-300">ETA: {item.eta || "10-15 mins"}</p>
+                  <p className="text-sm text-gray-300">
+                    ETA: {item.eta || "10-15 mins"}
+                  </p>
                 </div>
 
                 {/* Right - Select + Order */}
@@ -161,7 +176,7 @@ const Home: React.FC = () => {
                     className="p-2 rounded text-black"
                     value={selected}
                     onChange={(e) =>
-                      setQuantitySelection(prev => ({
+                      setQuantitySelection((prev) => ({
                         ...prev,
                         [id]: e.target.value as "Full" | "Half",
                       }))
