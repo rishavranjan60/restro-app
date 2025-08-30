@@ -13,7 +13,7 @@ const Login: React.FC = () => {
 
     if (username === "admin" && password === "admin123") {
       login("mock-token"); // Store token in localStorage
-      navigate("/");       // ✅ Redirect to admin dashboard
+      navigate("/");       // Redirect to admin dashboard
     } else {
       alert("Invalid credentials");
     }

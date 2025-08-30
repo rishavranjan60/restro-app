@@ -19,7 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (token: string) => {
     localStorage.setItem("admin-token", token);
-    setIsAuthenticated(true); // ✅ triggers rerender
+    setIsAuthenticated(true); //  triggers rerender
   };
 
   const logout = () => {
