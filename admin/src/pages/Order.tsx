@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../utils/api";
+import { getOrders } from "../utils/api"; //  use centralized API
 
 interface OrderItem {
   name: string;
@@ -25,13 +25,11 @@ const Orders: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/orders`);
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      const data = await res.json();
+      const data = await getOrders(); //  now using api.ts
       setOrders(data);
       setError(null);
     } catch (err) {
-      console.error("❌ Error fetching orders:", err);
+      console.error(" Error fetching orders:", err);
       setError("Failed to load orders.");
     } finally {
       setLoading(false);
@@ -44,7 +42,7 @@ const Orders: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">📦 Orders</h2>
+      <h2 className="text-2xl font-bold mb-4">Orders</h2>
       {loading && <p>Loading orders...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {orders.length === 0 && !loading ? (

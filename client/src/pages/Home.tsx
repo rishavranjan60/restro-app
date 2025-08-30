@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { CartItem, Category, FoodItem } from "../types/types";
 import CategoryFilter from "../components/CategoryFilter";
 import Cart from "../components/Cart";
 import BillDownload from "../components/BillDownload";
-import { placeOrder, API_BASE_URL } from "../utils/api";
+import { placeOrder, getFoods } from "../utils/api"; // import getFoods + placeOrder
 
 const Home: React.FC = () => {
   const [category, setCategory] = useState<Category>("All");
@@ -18,14 +17,14 @@ const Home: React.FC = () => {
     Record<string, "Full" | "Half">
   >({});
 
-  // ✅ Fetch menu from backend
+  //  Fetch menu from backend
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const res = await axios.get<FoodItem[]>(`${API_BASE_URL}/foods`);
-        setFoodItems(res.data);
+        const data = await getFoods(); // use api.ts helper
+        setFoodItems(data);
       } catch (err) {
-        console.error("❌ Failed to fetch foods", err);
+        console.error("❌ Failed to fetch foods:", err);
       }
     };
     fetchFoods();
@@ -115,11 +114,11 @@ const Home: React.FC = () => {
         total,
       };
 
-      await placeOrder(orderData);
+      await placeOrder(orderData); // uses helper
       setOrderPlaced(true);
-      alert("✅ Order placed successfully!");
+      alert("Order placed successfully!");
     } catch (err) {
-      alert("❌ Failed to place order.");
+      alert("Failed to place order.");
       console.error(err);
     }
   };
@@ -240,7 +239,8 @@ const Home: React.FC = () => {
             <div className="text-center text-2xl font-semibold mt-6 text-green-400">
               ✅ Order placed
             </div>
-            <BillDownload cart={cart} total={total} />
+            <BillDownload cart={cart} total={total} name={name} phone={phone} table={table} />
+
           </>
         )}
       </div>

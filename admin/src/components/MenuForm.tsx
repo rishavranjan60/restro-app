@@ -1,35 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { getFoods, addFood, updateFood, deleteFood } from "../utils/api";
+import { FoodItem, Category } from "../types/types"; // use centralized types
 
-interface FoodItem {
-  _id?: string;
-  name: string;
-  quantity: string;
-  price: number;
-  category: string;
-  type: "Veg" | "Non-Veg";
-  eta: string;
-  image?: string;
-  description: string;
-}
-
-const categories = [
+const categories: Category[] = [
+  "Pizza & Burger",
   "MoMo",
-  "Chowmeine",
+  "Chowmein",
+  "Home Foods (Veg)",
+  "Chicken Special",
+  "Biryani",
+  "Non-Veg Starter",
   "Beer",
-  "Chicken Biryani",
-  "Drinks",
-  "Snacks",
-  "Dessert",
+  "Wine",
+  "Cold Drinks & Juices",
 ];
 
 const MenuForm: React.FC = () => {
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [form, setForm] = useState<FoodItem>({
     name: "",
-    quantity: "",
+    quantity: "Full", // default to valid value
     price: 0,
-    category: "",
+    category: "Pizza & Burger", // default category
     type: "Veg",
     eta: "",
     image: "",
@@ -58,7 +50,7 @@ const MenuForm: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value as any }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,6 +60,11 @@ const MenuForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!form.name || !form.category || !form.quantity || !form.price) {
+      alert("⚠️ Please fill all required fields.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -101,7 +98,11 @@ const MenuForm: React.FC = () => {
   };
 
   const handleEdit = (food: FoodItem) => {
-    setForm(food);
+    setForm({
+      ...food,
+      quantity: food.quantity as "Full" | "Half", //  enforce type
+      category: food.category as Category,        //  enforce type
+    });
     setEditingId(food._id || null);
     setImageFile(null);
   };
@@ -121,9 +122,9 @@ const MenuForm: React.FC = () => {
   const resetForm = () => {
     setForm({
       name: "",
-      quantity: "",
+      quantity: "Full", //  reset to default valid value
       price: 0,
-      category: "",
+      category: "Pizza & Burger", // reset to default valid category
       type: "Veg",
       eta: "",
       image: "",
@@ -155,7 +156,6 @@ const MenuForm: React.FC = () => {
             onChange={handleChange}
             required
           >
-            <option value="">Select Quantity</option>
             <option value="Full">Full</option>
             <option value="Half">Half</option>
           </select>
@@ -175,7 +175,6 @@ const MenuForm: React.FC = () => {
             onChange={handleChange}
             required
           >
-            <option value="">Select Category</option>
             {categories.map((cat, idx) => (
               <option key={idx} value={cat}>
                 {cat}
@@ -236,7 +235,9 @@ const MenuForm: React.FC = () => {
           <button
             onClick={resetForm}
             className={`px-4 py-2 rounded ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-500 hover:bg-gray-600"
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-500 hover:bg-gray-600"
             }`}
             disabled={loading}
           >
