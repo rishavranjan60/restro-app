@@ -1,5 +1,6 @@
-// ✅ Change this once your ECS Load Balancer URL is ready
-export const API_BASE_URL = "https://http://alb-1234.us-east-1.elb.amazonaws.com/api";
+// ✅ Use backend URL from .env
+export const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 
 export const placeOrder = async (order: any) => {
   const res = await fetch(`${API_BASE_URL}/orders`, {

@@ -5,9 +5,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 
-
 import connectDB from "./db";
-
 
 // Routes
 import foodRoutes from "./routes/food.routes";
@@ -21,35 +19,26 @@ const app = express();
 // Connect to MongoDB Atlas
 connectDB();
 
-// Allow both local + ECS load balancer
-const allowedOrigins = [
-  "http://localhost:3000",   // local client
-  "http://localhost:5173",   // local Vite
-  "https://your-client-url.com",  // replace with deployed client URL
-  "https://your-admin-url.com",   // replace with deployed admin URL
-];
-
+// ✅ TEMP FIX: Allow all origins (for testing)
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error("❌ CORS blocked:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check for ECS
+// ✅ Health check endpoint for ALB
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+// Root check
 app.get("/", (req, res) => {
   res.json({ status: "✅ Backend is running!" });
 });
 
-// Serve uploaded images if needed
+// Serve uploaded images
 app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 
 // Routes
@@ -67,7 +56,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // IMPORTANT: ECS health check expects containerPort = 5000
 const PORT = parseInt(process.env.PORT || "5000", 10);
-app.listen(PORT, () => {
-  console.log(` Backend running on port ${PORT}`);
-});
 
+// ✅ Must bind to 0.0.0.0 for ECS/ALB
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Backend running on port ${PORT}`);
+});

@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-import {
-  getFoods,
-  addFood,
-  updateFood,
-  deleteFood,
-} from "../utils/api";
+import { getFoods, addFood, updateFood, deleteFood } from "../utils/api";
 
 interface FoodItem {
   _id?: string;
@@ -91,6 +85,7 @@ const MenuForm: React.FC = () => {
 
       if (editingId) {
         await updateFood(editingId, foodForm);
+        setEditingId(null);
       } else {
         await addFood(foodForm);
       }
@@ -99,6 +94,7 @@ const MenuForm: React.FC = () => {
       resetForm();
     } catch (err) {
       console.error("❌ Error saving food item:", err);
+      alert("Failed to save food item");
     } finally {
       setLoading(false);
     }
@@ -118,6 +114,7 @@ const MenuForm: React.FC = () => {
       fetchFoods();
     } catch (err) {
       console.error("❌ Error deleting food item:", err);
+      alert("Failed to delete food item");
     }
   };
 
@@ -168,7 +165,7 @@ const MenuForm: React.FC = () => {
             type="number"
             value={form.price}
             onChange={handleChange}
-            placeholder="Price (EURO)"
+            placeholder="Price (EUR)"
             required
           />
           <select
@@ -195,14 +192,6 @@ const MenuForm: React.FC = () => {
             <option value="Non-Veg">Non-Veg</option>
           </select>
           <input
-            className="p-2 rounded text-black"
-            name="eta"
-            value={form.eta}
-            onChange={handleChange}
-            placeholder="ETA (e.g. 15 min)"
-            required
-          />
-          <input
             className="p-2 bg-white text-black rounded"
             type="file"
             accept="image/*"
@@ -215,6 +204,14 @@ const MenuForm: React.FC = () => {
               className="w-24 h-24 object-cover rounded mt-2"
             />
           )}
+          <input
+            className="p-2 rounded text-black col-span-1 md:col-span-2"
+            name="eta"
+            value={form.eta}
+            onChange={handleChange}
+            placeholder="ETA (e.g. 15 min)"
+            required
+          />
           <textarea
             className="p-2 rounded text-black col-span-1 md:col-span-2"
             name="description"
@@ -228,7 +225,9 @@ const MenuForm: React.FC = () => {
           <button
             onClick={handleSubmit}
             className={`px-4 py-2 rounded ${
-              loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
             }`}
             disabled={loading}
           >
@@ -277,7 +276,7 @@ const MenuForm: React.FC = () => {
                 </td>
                 <td className="p-2">{food.name}</td>
                 <td className="p-2">{food.quantity}</td>
-                <td className="p-2">EURO: {food.price}</td>
+                <td className="p-2">EUR {food.price}</td>
                 <td className="p-2">{food.category}</td>
                 <td className="p-2">{food.type}</td>
                 <td className="p-2">{food.eta}</td>

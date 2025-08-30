@@ -4,11 +4,7 @@ import { CartItem, Category, FoodItem } from "../types/types";
 import CategoryFilter from "../components/CategoryFilter";
 import Cart from "../components/Cart";
 import BillDownload from "../components/BillDownload";
-import { placeOrder } from "../utils/api";
-
-// 🔥 Update this to your AWS ECS / Fargate Load Balancer DNS
-// Example: "https://abc123xyz.us-east-1.elb.amazonaws.com/api"
-const API_BASE_URL = "https://restro-backend-alb-1234567890.us-east-1.elb.amazonaws.com/api";
+import { placeOrder, API_BASE_URL } from "../utils/api";
 
 const Home: React.FC = () => {
   const [category, setCategory] = useState<Category>("All");
@@ -40,15 +36,13 @@ const Home: React.FC = () => {
       ? foodItems
       : foodItems.filter((f) => f.category === category);
 
-  // ✅ Add item to cart
   const addToCart = (item: FoodItem) => {
     const id = item._id || item.id!;
     const selectedQuantity = quantitySelection[id] || "Full";
     const price = selectedQuantity === "Full" ? item.price : item.price / 2;
 
     const existing = cart.find(
-      (p) =>
-        (p._id === id || p.id === id) && p.quantity === selectedQuantity
+      (p) => (p._id === id || p.id === id) && p.quantity === selectedQuantity
     );
 
     if (existing) {
@@ -67,7 +61,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // ✅ Increment cart item
   const increment = (id: number | string) => {
     setCart((prev) =>
       prev.map((p) =>
@@ -78,7 +71,6 @@ const Home: React.FC = () => {
     );
   };
 
-  // ✅ Decrement cart item
   const decrement = (id: number | string) => {
     setCart((prev) =>
       prev
@@ -104,7 +96,6 @@ const Home: React.FC = () => {
     0
   );
 
-  // ✅ Confirm Order
   const confirmOrder = async () => {
     if (!name || !phone || !table) {
       alert("Please fill in all customer details.");
@@ -135,7 +126,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="md:flex bg-[#0d0d1d] text-white min-h-screen">
-      {/* Left - Food Items */}
+      {/* Left: Food Items */}
       <div className="md:w-2/3 w-full p-4 overflow-y-auto max-h-screen">
         <h1 className="text-2xl font-bold mb-2">Restro Menu</h1>
         <CategoryFilter selected={category} onChange={setCategory} />
@@ -149,7 +140,6 @@ const Home: React.FC = () => {
                 key={id}
                 className="flex justify-between items-center bg-zinc-800 p-4 rounded shadow-md"
               >
-                {/* Left - Image */}
                 <div className="w-16 h-16 rounded overflow-hidden bg-white">
                   <img
                     src={item.image}
@@ -161,16 +151,12 @@ const Home: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-
-                {/* Center - Info */}
                 <div className="flex-1 mx-4">
                   <h3 className="text-lg font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-300">
                     ETA: {item.eta || "10-15 mins"}
                   </p>
                 </div>
-
-                {/* Right - Select + Order */}
                 <div className="flex items-center gap-2">
                   <select
                     className="p-2 rounded text-black"
@@ -182,10 +168,9 @@ const Home: React.FC = () => {
                       }))
                     }
                   >
-                    <option value="Half">Half - Rs. {item.price / 2}</option>
-                    <option value="Full">Full - Rs. {item.price}</option>
+                    <option value="Half">Half - €{item.price / 2}</option>
+                    <option value="Full">Full - €{item.price}</option>
                   </select>
-
                   <button
                     onClick={() => addToCart(item)}
                     className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700"
@@ -199,7 +184,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Right - Cart & Order */}
+      {/* Right: Cart & Order */}
       <div className="md:w-1/3 w-full bg-[#111827] p-4 border-t md:border-l md:border-t-0 border-gray-600">
         {!orderPlaced ? (
           <>
@@ -210,9 +195,7 @@ const Home: React.FC = () => {
               onConfirm={confirmOrder}
               onClear={clearCart}
             />
-
-            <p className="mt-4 text-lg font-bold">Total: EURO: {total}</p>
-
+            <p className="mt-4 text-lg font-bold">Total: €{total}</p>
             <div className="mt-4 bg-gray-700 p-3 rounded-md">
               <h3 className="text-lg font-medium mb-2">🧾 Customer Details</h3>
               <input
@@ -237,7 +220,6 @@ const Home: React.FC = () => {
                 onChange={(e) => setTable(e.target.value)}
               />
             </div>
-
             <div className="mt-4 flex flex-col md:flex-row gap-3">
               <button
                 onClick={confirmOrder}

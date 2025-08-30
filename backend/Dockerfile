@@ -4,18 +4,20 @@ FROM node:18-alpine
 # Create app directory
 WORKDIR /app
 
-# Copy dependencies
-COPY package*.json ./
+# Copy package.json and tsconfig.json first (for better caching)
+COPY package*.json tsconfig.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy all source code
+# Copy rest of the source code
 COPY . .
 
 # Build TypeScript into dist/
 RUN npm run build
 
-# Expose port (adjust if needed)
-EXPOSE 8080
+# Expose the correct port (matches your Express app)
+EXPOSE 5000
 
-# Start app (runs dist/index.js)
+# Start the app
 CMD ["npm", "start"]
