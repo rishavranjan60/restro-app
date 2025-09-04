@@ -20,10 +20,19 @@ const app = express();
 connectDB();
 
 //  TEMP FIX: Allow all origins (for testing)
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-}));
+const allowedOrigins = [
+  "https://your-admin-frontend.onrender.com",
+  "https://your-client-frontend.onrender.com",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
