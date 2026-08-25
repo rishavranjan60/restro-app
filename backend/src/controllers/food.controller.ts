@@ -1,23 +1,37 @@
-import { Request, Response } from 'express';
-import { FoodModel } from '../models/food.model';
+import { Request, Response } from "express";
+import { FoodModel } from "../models/food.model";
+import { uploadImage } from "../utils/cloudinary";
 
-// POST: Add new food
-export const addFood = async (req: Request, res: Response): Promise<void> => {
+export const addFood = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    console.log(" Incoming form data (body):", req.body);
-    console.log("📷 Uploaded file (req.file):", req.file);
-
     if (!req.file) {
-      res.status(400).json({ error: "Image not uploaded or invalid." });
+      res.status(400).json({
+        error: "Image not uploaded or invalid.",
+      });
       return;
     }
 
-    const image = req.file.path;
-    const { name, category, price: rawPrice, quantity, type, eta, description } = req.body;
+    const uploadedImage = await uploadImage(req.file.buffer);
+
+    const {
+      name,
+      category,
+      price: rawPrice,
+      quantity,
+      type,
+      eta,
+      description,
+    } = req.body;
+
     const price = Number(rawPrice);
 
-    if (!name || !category || !image || isNaN(price)) {
-      res.status(400).json({ error: "Required fields missing or invalid." });
+    if (!name || !category || Number.isNaN(price)) {
+      res.status(400).json({
+        error: "Required fields are missing or invalid.",
+      });
       return;
     }
 
@@ -28,71 +42,108 @@ export const addFood = async (req: Request, res: Response): Promise<void> => {
       quantity,
       type,
       eta,
-      image,
+      image: uploadedImage.secure_url,
       description,
     });
 
     await newFood.save();
-    res.status(201).json(newFood);
 
+    res.status(201).json(newFood);
   } catch (error: any) {
-    console.error("❌ Error adding food item:", error);
+    console.error("Error adding food item:", error);
+
     res.status(500).json({
       error: error.message || "Something went wrong",
     });
   }
 };
 
-// GET: Fetch all food items
-export const getFoods = async (req: Request, res: Response): Promise<void> => {
+export const getFoods = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const foods = await FoodModel.find();
+
     res.status(200).json(foods);
-  } catch (error: any) {
-    console.error("❌ Error fetching foods:", error);
-    res.status(500).json({ error: "Failed to fetch food items" });
+  } catch (error) {
+    console.error("Error fetching foods:", error);
+
+    res.status(500).json({
+      error: "Failed to fetch food items",
+    });
   }
 };
 
-//  PUT: Update food
-export const updateFood = async (req: Request, res: Response): Promise<void> => {
+export const updateFood = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
-    const updateData: any = { ...req.body };
+    const updateData: Record<string, unknown> = {
+      ...req.body,
+    };
 
-    // If a new image is uploaded
     if (req.file) {
-      updateData.image = req.file.path;
+      const uploadedImage = await uploadImage(req.file.buffer);
+      updateData.image = uploadedImage.secure_url;
     }
 
-    const updatedFood = await FoodModel.findByIdAndUpdate(id, updateData, { new: true });
+    if (updateData.price !== undefined) {
+      updateData.price = Number(updateData.price);
+    }
+
+    const updatedFood = await FoodModel.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedFood) {
-      res.status(404).json({ error: "Food not found" });
+      res.status(404).json({
+        error: "Food not found",
+      });
       return;
     }
 
     res.json(updatedFood);
-  } catch (error: any) {
-    console.error("❌ Error updating food:", error);
-    res.status(500).json({ error: "Failed to update food item" });
+  } catch (error) {
+    console.error("Error updating food:", error);
+
+    res.status(500).json({
+      error: "Failed to update food item",
+    });
   }
 };
 
-//  DELETE: Remove food
-export const deleteFood = async (req: Request, res: Response): Promise<void> => {
+export const deleteFood = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
-    const deleted = await FoodModel.findByIdAndDelete(id);
 
-    if (!deleted) {
-      res.status(404).json({ error: "Food not found" });
+    const deletedFood = await FoodModel.findByIdAndDelete(id);
+
+    if (!deletedFood) {
+      res.status(404).json({
+        error: "Food not found",
+      });
       return;
     }
 
-    res.json({ message: "Food deleted successfully" });
-  } catch (error: any) {
-    console.error("❌ Error deleting food:", error);
-    res.status(500).json({ error: "Failed to delete food item" });
+    res.json({
+      message: "Food deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting food:", error);
+
+    res.status(500).json({
+      error: "Failed to delete food item",
+    });
   }
 };

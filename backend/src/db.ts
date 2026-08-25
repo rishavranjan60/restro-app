@@ -1,19 +1,31 @@
 import mongoose from "mongoose";
 
-const connectDB = async () => {
+let connectionPromise: Promise<typeof mongoose> | null = null;
+
+const connectDB = async (): Promise<typeof mongoose> => {
   const uri = process.env.MONGO_URI;
 
   if (!uri) {
-    console.error("MONGO_URI not found in .env");
-    process.exit(1);
+    throw new Error("MONGO_URI is not configured");
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
+  }
+
+  if (!connectionPromise) {
+    connectionPromise = mongoose.connect(uri, {
+      maxPoolSize: 5,
+      serverSelectionTimeoutMS: 10000,
+      maxIdleTimeMS: 60000,
+    });
   }
 
   try {
-    await mongoose.connect(uri);
-    console.log("MongoDB connected");
-  } catch (err) {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1);
+    return await connectionPromise;
+  } catch (error) {
+    connectionPromise = null;
+    throw error;
   }
 };
 

@@ -1,6 +1,5 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import multer from 'multer';
+import { UploadApiResponse, v2 as cloudinary } from "cloudinary";
+import multer from "multer";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -8,20 +7,40 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-console.log("🌩️ Cloudinary config loaded:", {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY ? "✔️ loaded" : "❌ missing",
-  api_secret: process.env.CLOUDINARY_API_SECRET ? "✔️ loaded" : "❌ missing",
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, callback) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    callback(null, allowedTypes.includes(file.mimetype));
+  },
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: () => ({
-    folder: 'restaurant-menu',
-    allowed_formats: ['jpg', 'jpeg', 'png'],
-  }),
-});
+const uploadImage = (buffer: Buffer): Promise<UploadApiResponse> =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "restaurant-menu",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
 
-const upload = multer({ storage });
+        if (!result) {
+          reject(new Error("Cloudinary returned no upload result"));
+          return;
+        }
 
-export { cloudinary, storage, upload };
+        resolve(result);
+      }
+    );
+
+    stream.end(buffer);
+  });
+
+export { cloudinary, upload, uploadImage };
