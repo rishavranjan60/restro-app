@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  backend-build:
+    name: Build backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run build
+
+      - name: Validate SAM template
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+          token: ${{ github.token }}
+
+      - name: Run SAM validation
+        run: sam validate --template-file template.yaml --lint
+
+
+  client-build:
+    name: Build customer frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    env:
+      REACT_APP_API_BASE_URL: https://ys4jz66gj7.execute-api.eu-central-1.amazonaws.com/api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create production build
+        run: npm run build
+
+
+  admin-build:
+    name: Build admin frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: admin
+
+    env:
+      REACT_APP_API_BASE_URL: https://ys4jz66gj7.execute-api.eu-central-1.amazonaws.com/api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create production build
+        run: npm run build

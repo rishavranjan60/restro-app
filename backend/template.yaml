@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Low-cost serverless backend for restro-app
+
+Parameters:
+  MongoUri:
+    Type: String
+    NoEcho: true
+    Description: MongoDB Atlas connection string
+
+  CloudinaryCloudName:
+    Type: String
+
+  CloudinaryApiKey:
+    Type: String
+    NoEcho: true
+
+  CloudinaryApiSecret:
+    Type: String
+    NoEcho: true
+
+  CorsOrigins:
+    Type: String
+    Description: Comma-separated client and admin frontend origins
+
+  AdminUsername:
+    Type: String
+    Default: admin
+
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 12
+
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures:
+      - x86_64
+    MemorySize: 512
+    Timeout: 29
+
+Resources:
+  RestroHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: "$default"
+
+  RestroBackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-api"
+      CodeUri: .
+      Handler: src/handler.handler
+      Description: Express API for the restaurant client and admin applications
+
+      Environment:
+        Variables:
+          NODE_ENV: production
+          MONGO_URI: !Ref MongoUri
+          CLOUDINARY_CLOUD_NAME: !Ref CloudinaryCloudName
+          CLOUDINARY_API_KEY: !Ref CloudinaryApiKey
+          CLOUDINARY_API_SECRET: !Ref CloudinaryApiSecret
+          CORS_ORIGINS: !Ref CorsOrigins
+          ADMIN_USERNAME: !Ref AdminUsername
+          ADMIN_PASSWORD: !Ref AdminPassword
+          JWT_SECRET: !Ref JwtSecret
+
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RestroHttpApi
+            Path: /
+            Method: ANY
+            PayloadFormatVersion: "2.0"
+
+        Proxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RestroHttpApi
+            Path: /{proxy+}
+            Method: ANY
+            PayloadFormatVersion: "2.0"
+
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/handler.ts
+        Minify: true
+        Sourcemap: true
+        Target: es2022
+
+  RestroBackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: RestroBackendFunction
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-api"
+      RetentionInDays: 14
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway base URL
+    Value: !Sub "https://${RestroHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+
+  HealthUrl:
+    Description: Backend health-check URL
+    Value: !Sub "https://${RestroHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/health"

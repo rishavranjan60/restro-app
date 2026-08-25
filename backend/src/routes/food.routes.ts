@@ -1,19 +1,35 @@
-import express from 'express';
-import { upload } from '../utils/cloudinary';
-import { addFood, getFoods, updateFood, deleteFood } from '../controllers/food.controller';
+import express from "express";
+import { upload } from "../utils/cloudinary";
+import {
+  addFood,
+  getFoods,
+  updateFood,
+  deleteFood,
+} from "../controllers/food.controller";
+import { requireAdmin } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
-// ✅ GET all foods
-router.get('/', getFoods);
+router.get("/", getFoods);
 
-// ✅ POST new food
-router.post('/', upload.single('image'), addFood);
+router.post(
+  "/",
+  requireAdmin,
+  upload.single("image"),
+  addFood
+);
 
-// 🆕 ✅ PUT: Update existing food
-router.put('/:id', upload.single('image'), updateFood);
+router.put(
+  "/:id",
+  requireAdmin,
+  upload.single("image"),
+  updateFood
+);
 
-// 🆕 ✅ DELETE: Remove food
-router.delete('/:id', deleteFood);
+router.delete(
+  "/:id",
+  requireAdmin,
+  deleteFood
+);
 
 export default router;

@@ -1,0 +1,112 @@
+name: Deploy backend to AWS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: restro-backend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy AWS SAM backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Compile backend
+        run: npm run build
+
+      - name: Add local esbuild to PATH
+        run: echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Install AWS SAM CLI
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+          token: ${{ github.token }}
+
+      - name: Authenticate with AWS using OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: restro-backend-deployment
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Build SAM application
+        run: sam build --template-file template.yaml
+
+      - name: Deploy backend
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          SAM_ARTIFACTS_BUCKET: ${{ vars.SAM_ARTIFACTS_BUCKET }}
+          CFN_EXECUTION_ROLE_ARN: ${{ vars.CFN_EXECUTION_ROLE_ARN }}
+
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+        run: |
+          sam deploy \
+            --template-file .aws-sam/build/template.yaml \
+            --stack-name restro-backend \
+            --region "$AWS_REGION" \
+            --s3-bucket "$SAM_ARTIFACTS_BUCKET" \
+            --capabilities CAPABILITY_IAM \
+            --role-arn "$CFN_EXECUTION_ROLE_ARN" \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              "MongoUri=$MONGO_URI" \
+              "CloudinaryCloudName=$CLOUDINARY_CLOUD_NAME" \
+              "CloudinaryApiKey=$CLOUDINARY_API_KEY" \
+              "CloudinaryApiSecret=$CLOUDINARY_API_SECRET" \
+              "CorsOrigins=$CORS_ORIGINS" \
+              "AdminUsername=$ADMIN_USERNAME" \
+              "AdminPassword=$ADMIN_PASSWORD" \
+              "JwtSecret=$JWT_SECRET"
+
+      - name: Test deployed health endpoint
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name restro-backend \
+            --region "${{ vars.AWS_REGION }}" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --output text)
+
+          curl --fail --retry 5 --retry-delay 5 "$API_URL/health"

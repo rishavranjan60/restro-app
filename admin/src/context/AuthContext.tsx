@@ -1,4 +1,8 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+} from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -12,14 +16,17 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    !!localStorage.getItem("admin-token")
-  );
+export const AuthProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] =
+    useState<boolean>(
+      Boolean(localStorage.getItem("admin-token"))
+    );
 
   const login = (token: string) => {
     localStorage.setItem("admin-token", token);
-    setIsAuthenticated(true); //  triggers rerender
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
@@ -28,7 +35,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

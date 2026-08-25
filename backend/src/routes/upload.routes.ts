@@ -1,29 +1,41 @@
-import express, { Request, Response } from "express";
-import multer from "multer";
-import path from "path";
+import express, {
+  Request,
+  Response,
+} from "express";
+import {
+  upload,
+  uploadImage,
+} from "../utils/cloudinary";
+import { requireAdmin } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
-// Set up multer storage
-const storage = multer.diskStorage({
-  destination: function (_req, _file, cb) {
-    cb(null, "uploads/"); // Save to uploads/ directory
-  },
-  filename: function (_req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Unique filename
-  },
-});
+router.post(
+  "/",
+  requireAdmin,
+  upload.single("file"),
+  async (req: Request, res: Response) => {
+    if (!req.file) {
+      res.status(400).json({
+        error: "No valid file uploaded",
+      });
+      return;
+    }
 
-const upload = multer({ storage });
+    try {
+      const result = await uploadImage(req.file.buffer);
 
-// ✅ POST /api/upload
-router.post("/", upload.single("file"), function (req: Request, res: Response) {
-  if (!req.file) {
-    res.status(400).json({ error: "No file uploaded" });
-    return;
+      res.status(200).json({
+        url: result.secure_url,
+      });
+    } catch (error) {
+      console.error("Upload failed:", error);
+
+      res.status(500).json({
+        error: "Upload failed",
+      });
+    }
   }
-
-  res.status(200).json({ url: `http://localhost:5000/uploads/${req.file.filename}` });
-});
+);
 
 export default router;

@@ -28,3 +28,13 @@ uploads/
 
 # Executables
 admin/tailwindcss.exe
+
+# AWS SAM
+.aws-sam/
+backend/.aws-sam/
+samconfig.toml
+backend/samconfig.toml
+
+# Old Serverless Framework build output
+.serverless/
+backend/.serverless/
