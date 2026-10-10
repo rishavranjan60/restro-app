@@ -1,28 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
 import { FoodItem } from "../types/types";
 
 interface Props {
   item: FoodItem;
   onOrder: (item: FoodItem) => void;
+  portion: "Full" | "Half";
+  disabled?: boolean;
+  onPortionChange: (portion: "Full" | "Half") => void;
 }
 
-const FoodItemCard: React.FC<Props> = ({ item, onOrder }) => (
-  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg mb-4 shadow">
-    <div className="flex items-center gap-4">
-      <img src={item.image} className="w-20 h-20 rounded" alt={item.name} />
-      <div>
-        <h4 className="text-lg font-bold">{item.name}</h4>
-        <p>QTY: {item.quantity}</p>
-        <p>Rs. {item.price}</p>
-      </div>
-    </div>
-    <button
-      onClick={() => onOrder(item)}
-      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
-    >
-      Order
-    </button>
-  </div>
-);
+export const formatPrice = (price: number) =>
+  new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
 
+const FoodItemCard: React.FC<Props> = ({
+  item,
+  onOrder,
+  portion,
+  onPortionChange,
+  disabled,
+}) => {
+  const [failedImage, setFailedImage] = useState<string>();
+  const price = portion === "Half" ? item.price / 2 : item.price;
+  const fallback = !item.image || failedImage === item.image;
+  return (
+    <article className="food-card">
+      <div className={`food-image ${fallback ? "illustrated" : ""}`}>
+        {fallback ? (
+          <div className="food-placeholder">
+            <span aria-hidden="true">🍽</span>
+            <span>Made to order</span>
+          </div>
+        ) : (
+          <img
+            src={item.image}
+            alt={item.name}
+            loading="lazy"
+            onError={() => setFailedImage(item.image)}
+          />
+        )}
+        <span
+          className={`diet-label ${item.type === "Veg" ? "veg" : "non-veg"}`}
+        >
+          <i />
+          {item.type}
+        </span>
+      </div>
+      <div className="food-card-body">
+        <p className="food-category">{item.category}</p>
+        <h3>{item.name}</h3>
+        <p className="food-description">
+          {item.description || "Freshly prepared, ready for your table."}
+        </p>
+        <div className="portion-row">
+          <span className="prep-time">◷ {item.eta || "10–15 min"}</span>
+          <select
+            disabled={disabled}
+            aria-label={`Portion for ${item.name}`}
+            value={portion}
+            onChange={(e) => onPortionChange(e.target.value as "Full" | "Half")}
+          >
+            <option value="Full">Full portion</option>
+            <option value="Half">Half portion</option>
+          </select>
+        </div>
+        <div className="food-card-bottom">
+          <strong>{formatPrice(price)}</strong>
+          <button
+            type="button"
+            disabled={disabled}
+            className="add-button"
+            onClick={() => onOrder(item)}
+            aria-label={`Add ${item.name}, ${portion.toLowerCase()} portion`}
+          >
+            Add <span aria-hidden="true">+</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+};
 export default FoodItemCard;

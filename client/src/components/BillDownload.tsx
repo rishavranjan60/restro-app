@@ -31,9 +31,15 @@ const BillDownload: React.FC<Props> = ({ cart, total, name, phone, table }) => {
 
         {/*  Customer Details */}
         <div className="mb-3">
-          <p><strong>Customer:</strong> {name}</p>
-          <p><strong>Phone:</strong> {phone}</p>
-          <p><strong>Table:</strong> {table}</p>
+          <p>
+            <strong>Customer:</strong> {name}
+          </p>
+          <p>
+            <strong>Phone:</strong> {phone}
+          </p>
+          <p>
+            <strong>Table:</strong> {table}
+          </p>
         </div>
 
         {/*  Dashed Line Separator */}
@@ -42,23 +48,24 @@ const BillDownload: React.FC<Props> = ({ cart, total, name, phone, table }) => {
         <h3 className="font-semibold">Items:</h3>
         <ul className="list-decimal pl-5">
           {cart.map((item) => (
-            <li key={item._id || item.id}>
-              {item.name} - €{item.price} × {item.cartQuantity} = €
-              {item.price * item.cartQuantity}
+            <li key={`${item._id || item.id}:${item.quantity}`}>
+              {item.name} ({item.quantity}) - €{item.price.toFixed(2)} ×{" "}
+              {item.cartQuantity} = €
+              {(item.price * item.cartQuantity).toFixed(2)}
             </li>
           ))}
         </ul>
 
         <hr className="border-t border-dashed border-gray-500 my-3" />
 
-        <p className="mt-3 font-bold text-lg">Total: €{total}</p>
+        <p className="mt-3 font-bold text-lg">Total: €{total.toFixed(2)}</p>
       </div>
 
       <button
         onClick={downloadPDF}
         className="bg-red-500 mt-2 px-4 py-2 rounded hover:bg-red-600"
       >
-         Download Bill
+        Download Bill
       </button>
     </>
   );
